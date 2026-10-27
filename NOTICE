@@ -1,0 +1,12 @@
+new-api-xai-proxy
+Copyright 2026 heyzeyu contributors
+
+This standalone plugin is adapted from the xAI task plugin in new-api by
+QuantumNous: https://github.com/QuantumNous/new-api
+
+Original new-api and QuantumNous authorship and attribution are preserved.
+The original source and this derivative are distributed under the GNU Affero
+General Public License, version 3. See LICENSE for redistribution terms.
+
+This is a community-maintained integration, not an official xAI SDK.
+Development was assisted by OpenAI Codex.

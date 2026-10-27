@@ -1,0 +1,8 @@
+node_modules/
+.env
+.env.*
+*.log
+coverage/
+host/
+*.mp4
+live-validation*.json

@@ -1,0 +1,16 @@
+{
+  "name": "new-api-xai-proxy",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "AGPL-3.0-only",
+  "description": "Standalone xAI-compatible proxy video task plugin for new-api",
+  "scripts": {
+    "test": "node --test test/plugin.test.mjs",
+    "check": "node --check plugin.js && node scripts/marketplace.mjs --check && node --test test/plugin.test.mjs",
+    "marketplace": "node scripts/marketplace.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

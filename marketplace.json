@@ -1,0 +1,47 @@
+{
+  "indexVersion": 1,
+  "name": "new-api-xai-proxy",
+  "plugins": [
+    {
+      "key": "xai-proxy",
+      "name": "xAI Proxy",
+      "icon": "XAI",
+      "website": "https://github.com/heyzeyu/new-api-xai-proxy",
+      "description": {
+        "en": "xAI-compatible proxy for Grok Imagine video generation",
+        "zh": "xAI 兼容反代的 Grok Imagine 视频生成"
+      },
+      "models": [
+        "grok-imagine-video",
+        "grok-imagine-video-1.5",
+        "grok-imagine-video-1.5-lite"
+      ],
+      "protocols": [
+        {
+          "name": "openai_responses",
+          "supports": [
+            "stream",
+            "sync",
+            "background"
+          ]
+        },
+        "openai_video"
+      ],
+      "latest": "0.1.0",
+      "versions": [
+        {
+          "version": "0.1.0",
+          "path": "https://raw.githubusercontent.com/heyzeyu/new-api-xai-proxy/v0.1.0/plugin.js",
+          "sha256": "9a0eefb82d30300731b7d617c78d95209b62a972bde8fa4f8c0e23c09d018aa7",
+          "minApiVersion": 1,
+          "kind": "task",
+          "baseUrl": "https://api.x.ai",
+          "auth": "api_key",
+          "allowedHosts": [
+            "vidgen.x.ai"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,415 @@
+{
+  "cases": [
+    {
+      "name": "openai video decode",
+      "hook": "protocols",
+      "path": [
+        "openai_video",
+        "decodeRequest"
+      ],
+      "args": [
+        {
+          "model": "grok-imagine-video",
+          "upstreamModel": "grok-imagine-video",
+          "baseUrl": "https://proxy.example",
+          "apiKey": "fixture-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "body": {
+            "kind": "json",
+            "value": {
+              "model": "grok-imagine-video",
+              "prompt": "A rolling ball",
+              "seconds": "1",
+              "resolution": "480p",
+              "aspect_ratio": "16:9"
+            }
+          }
+        }
+      ],
+      "expected": {
+        "kind": "submit",
+        "model": "grok-imagine-video",
+        "action": "text_to_video",
+        "requestBody": {
+          "model": "grok-imagine-video",
+          "duration": 1,
+          "resolution": "480p",
+          "prompt": "A rolling ball",
+          "aspect_ratio": "16:9"
+        }
+      }
+    },
+    {
+      "name": "upstream submission",
+      "hook": "buildSubmitRequest",
+      "args": [
+        {
+          "model": "grok-imagine-video",
+          "upstreamModel": "grok-imagine-video",
+          "baseUrl": "https://proxy.example",
+          "apiKey": "fixture-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "action": "text_to_video",
+          "requestBody": {
+            "model": "grok-imagine-video",
+            "duration": 1,
+            "resolution": "480p",
+            "prompt": "A rolling ball",
+            "aspect_ratio": "16:9"
+          }
+        }
+      ],
+      "expected": {
+        "url": "https://proxy.example/v1/videos/generations",
+        "method": "POST",
+        "headers": {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": "Bearer fixture-key"
+        },
+        "body": {
+          "model": "grok-imagine-video",
+          "duration": 1,
+          "resolution": "480p",
+          "prompt": "A rolling ball",
+          "aspect_ratio": "16:9"
+        },
+        "action": "text_to_video"
+      }
+    },
+    {
+      "name": "upstream poll",
+      "hook": "buildQueryRequest",
+      "args": [
+        {
+          "model": "grok-imagine-video",
+          "upstreamModel": "grok-imagine-video",
+          "baseUrl": "https://proxy.example",
+          "apiKey": "fixture-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "taskId": "upstream-id"
+        }
+      ],
+      "expected": {
+        "url": "https://proxy.example/v1/videos/upstream-id",
+        "method": "GET",
+        "headers": {
+          "Accept": "application/json",
+          "Authorization": "Bearer fixture-key"
+        }
+      }
+    },
+    {
+      "name": "pending result",
+      "hook": "parseTaskResult",
+      "args": [
+        {
+          "action": "text_to_video"
+        },
+        {
+          "status": "pending",
+          "progress": 42
+        },
+        {
+          "status": 200
+        }
+      ],
+      "expected": {
+        "status": "IN_PROGRESS",
+        "progress": "42%"
+      }
+    },
+    {
+      "name": "completed result",
+      "hook": "parseTaskResult",
+      "args": [
+        {
+          "action": "text_to_video"
+        },
+        {
+          "status": "done",
+          "video": {
+            "url": "/v1/videos/upstream-id/content",
+            "duration": 1,
+            "respect_moderation": true
+          }
+        },
+        {
+          "status": 200
+        }
+      ],
+      "expected": {
+        "status": "SUCCESS"
+      }
+    },
+    {
+      "name": "completed duration usage",
+      "hook": "extractUsageOnComplete",
+      "args": [
+        {
+          "action": "text_to_video"
+        },
+        null,
+        {
+          "status": "done",
+          "video": {
+            "url": "/v1/videos/upstream-id/content",
+            "duration": 1,
+            "respect_moderation": true
+          }
+        }
+      ],
+      "expected": {
+        "seconds": 1
+      }
+    },
+    {
+      "name": "completed artifact",
+      "hook": "listArtifacts",
+      "args": [
+        {
+          "status": "SUCCESS",
+          "data": {
+            "status": "done",
+            "video": {
+              "url": "/v1/videos/upstream-id/content",
+              "duration": 1,
+              "respect_moderation": true
+            }
+          }
+        }
+      ],
+      "expected": [
+        {
+          "key": "video",
+          "type": "video",
+          "mimeType": "video/mp4"
+        }
+      ]
+    },
+    {
+      "name": "protected video content",
+      "hook": "buildContentRequest",
+      "args": [
+        {
+          "artifactKey": "video",
+          "data": {
+            "status": "done",
+            "video": {
+              "url": "/v1/videos/upstream-id/content",
+              "duration": 1,
+              "respect_moderation": true
+            }
+          },
+          "upstreamTaskId": "upstream-id",
+          "baseUrl": "https://proxy.example",
+          "apiKey": "fixture-key",
+          "clientRequest": {
+            "method": "GET"
+          }
+        }
+      ],
+      "expected": {
+        "method": "GET",
+        "url": "https://proxy.example/v1/videos/upstream-id/content",
+        "headers": {
+          "Authorization": "Bearer fixture-key"
+        }
+      }
+    },
+    {
+      "name": "absolute content omits channel key",
+      "hook": "buildContentRequest",
+      "args": [
+        {
+          "artifactKey": "video",
+          "data": {
+            "status": "done",
+            "video": {
+              "url": "https://vidgen.x.ai/example.mp4",
+              "duration": 1
+            }
+          },
+          "upstreamTaskId": "upstream-id",
+          "baseUrl": "https://proxy.example",
+          "apiKey": "fixture-key",
+          "clientRequest": {
+            "method": "GET"
+          }
+        }
+      ],
+      "expected": {
+        "method": "GET",
+        "url": "https://vidgen.x.ai/example.mp4",
+        "credentialless": true
+      }
+    },
+    {
+      "name": "reject wrong task",
+      "hook": "buildContentRequest",
+      "args": [
+        {
+          "artifactKey": "video",
+          "data": {
+            "status": "done",
+            "video": {
+              "url": "/v1/videos/other-id/content",
+              "duration": 1
+            }
+          },
+          "upstreamTaskId": "upstream-id",
+          "baseUrl": "https://proxy.example",
+          "apiKey": "fixture-key",
+          "clientRequest": {
+            "method": "GET"
+          }
+        }
+      ],
+      "expectedError": "invalid video content URL"
+    },
+    {
+      "name": "reject protocol relative host",
+      "hook": "buildContentRequest",
+      "args": [
+        {
+          "artifactKey": "video",
+          "data": {
+            "status": "done",
+            "video": {
+              "url": "//evil.example/v1/videos/upstream-id/content",
+              "duration": 1
+            }
+          },
+          "upstreamTaskId": "upstream-id",
+          "baseUrl": "https://proxy.example",
+          "apiKey": "fixture-key",
+          "clientRequest": {
+            "method": "GET"
+          }
+        }
+      ],
+      "expectedError": "invalid video content URL"
+    },
+    {
+      "name": "reject query redirect",
+      "hook": "buildContentRequest",
+      "args": [
+        {
+          "artifactKey": "video",
+          "data": {
+            "status": "done",
+            "video": {
+              "url": "/v1/videos/upstream-id/content?url=https://evil.example",
+              "duration": 1
+            }
+          },
+          "upstreamTaskId": "upstream-id",
+          "baseUrl": "https://proxy.example",
+          "apiKey": "fixture-key",
+          "clientRequest": {
+            "method": "GET"
+          }
+        }
+      ],
+      "expectedError": "invalid video content URL"
+    },
+    {
+      "name": "reject path traversal",
+      "hook": "buildContentRequest",
+      "args": [
+        {
+          "artifactKey": "video",
+          "data": {
+            "status": "done",
+            "video": {
+              "url": "/v1/videos/upstream-id/../other-id/content",
+              "duration": 1
+            }
+          },
+          "upstreamTaskId": "upstream-id",
+          "baseUrl": "https://proxy.example",
+          "apiKey": "fixture-key",
+          "clientRequest": {
+            "method": "GET"
+          }
+        }
+      ],
+      "expectedError": "invalid video content URL"
+    },
+    {
+      "name": "reject insecure base",
+      "hook": "buildContentRequest",
+      "args": [
+        {
+          "artifactKey": "video",
+          "data": {
+            "status": "done",
+            "video": {
+              "url": "/v1/videos/upstream-id/content",
+              "duration": 1
+            }
+          },
+          "upstreamTaskId": "upstream-id",
+          "baseUrl": "http://proxy.example",
+          "apiKey": "fixture-key",
+          "clientRequest": {
+            "method": "GET"
+          }
+        }
+      ],
+      "expectedError": "invalid video content URL"
+    },
+    {
+      "name": "reject userinfo in base",
+      "hook": "buildContentRequest",
+      "args": [
+        {
+          "artifactKey": "video",
+          "data": {
+            "status": "done",
+            "video": {
+              "url": "/v1/videos/upstream-id/content",
+              "duration": 1
+            }
+          },
+          "upstreamTaskId": "upstream-id",
+          "baseUrl": "https://evil@proxy.example",
+          "apiKey": "fixture-key",
+          "clientRequest": {
+            "method": "GET"
+          }
+        }
+      ],
+      "expectedError": "invalid video content URL"
+    },
+    {
+      "name": "reject query in base",
+      "hook": "buildContentRequest",
+      "args": [
+        {
+          "artifactKey": "video",
+          "data": {
+            "status": "done",
+            "video": {
+              "url": "/v1/videos/upstream-id/content",
+              "duration": 1
+            }
+          },
+          "upstreamTaskId": "upstream-id",
+          "baseUrl": "https://proxy.example?to=evil.example",
+          "apiKey": "fixture-key",
+          "clientRequest": {
+            "method": "GET"
+          }
+        }
+      ],
+      "expectedError": "invalid video content URL"
+    }
+  ]
+}
