@@ -16,7 +16,7 @@ const index = {
       path: `https://raw.githubusercontent.com/heyzeyu/new-api-xai-proxy/v${meta.version}/plugin.js`,
       sha256: createHash('sha256').update(source).digest('hex'),
       minApiVersion: meta.apiVersion, kind: 'task', baseUrl: meta.baseUrl,
-      auth: 'api_key', allowedHosts: meta.allowedHosts,
+      auth: meta.auth, allowedHosts: meta.allowedHosts,
     }],
   }],
 };

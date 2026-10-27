@@ -13,7 +13,7 @@ https://raw.githubusercontent.com/heyzeyu/new-api-xai-proxy/main/marketplace.jso
 也可以在「上传插件 → 从 URL 导入」填写固定版本：
 
 ```text
-https://raw.githubusercontent.com/heyzeyu/new-api-xai-proxy/v0.1.0/plugin.js
+https://raw.githubusercontent.com/heyzeyu/new-api-xai-proxy/v0.1.1/plugin.js
 ```
 
 索引包含固定版本的源码 SHA-256。插件也可直接上传仓库中的 `plugin.js`。宿主须支持 Task Plugin API v1、模型用量配置、原生任务路由和标准视频 / Responses 协议。

@@ -18,6 +18,7 @@ for (const entry of fixture.cases) {
 
 test('xAI proxy declares its own routes without claiming a legacy channel', () => {
   assert.equal(plugin.meta.key, 'xai-proxy');
+  assert.equal(plugin.meta.auth, 'api_key');
   assert.equal(plugin.meta.channelTypes, undefined);
   assert.ok(plugin.meta.routes.every(route => route.path.startsWith('/xai-proxy/')));
   assert.deepEqual(plugin.meta.models, ['grok-imagine-video', 'grok-imagine-video-1.5', 'grok-imagine-video-1.5-lite']);

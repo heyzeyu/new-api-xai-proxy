@@ -12,9 +12,13 @@ import (
 	"slices"
 
 	"github.com/QuantumNous/new-api/common"
+	"github.com/QuantumNous/new-api/model"
 	"github.com/QuantumNous/new-api/pkg/billingexpr"
 	"github.com/QuantumNous/new-api/pkg/jsplugin"
 	"github.com/QuantumNous/new-api/plugins"
+	"github.com/QuantumNous/new-api/relay/channel"
+	taskplugin "github.com/QuantumNous/new-api/relay/channel/task/jsplugin"
+	relaycommon "github.com/QuantumNous/new-api/relay/common"
 	"github.com/QuantumNous/new-api/setting/billing_setting"
 )
 
@@ -47,7 +51,7 @@ func verify(sourcePath, fixturePath string) error {
 	if err != nil {
 		return fmt.Errorf("compile xAI proxy with built-ins: %w", err)
 	}
-	if loaded.Meta.Key != "xai-proxy" || len(loaded.Meta.ChannelTypes) != 0 {
+	if loaded.Meta.Key != "xai-proxy" || len(loaded.Meta.ChannelTypes) != 0 || loaded.Meta.Auth.Type != "api_key" {
 		return fmt.Errorf("xAI proxy must use its own task-plugin channel")
 	}
 	for _, model := range loaded.Meta.Models {
@@ -84,7 +88,28 @@ func verify(sourcePath, fixturePath string) error {
 	if err = verifyProtectedProbe(loaded); err != nil {
 		return err
 	}
+	if err = verifyArtifactDescriptor(loaded); err != nil {
+		return err
+	}
 	fmt.Printf("new-api runtime: %s@%s, %d models, %d/%d fixture cases, shared routes, pricing and protected probe passed\n", loaded.Meta.Key, loaded.Meta.Version, len(loaded.Meta.Models), report.Passed, report.Total)
+	return nil
+}
+
+func verifyArtifactDescriptor(plugin *jsplugin.LoadedPlugin) error {
+	data, err := common.Marshal(map[string]any{"status": "done", "video": map[string]any{"url": "/v1/videos/upstream-id/content", "duration": 1}})
+	if err != nil {
+		return err
+	}
+	task := &model.Task{TaskID: "task_public", Status: model.TaskStatusSuccess, Data: data, PrivateData: model.TaskPrivateData{UpstreamTaskID: "upstream-id"}}
+	adaptor := taskplugin.New(plugin)
+	adaptor.Init(&relaycommon.RelayInfo{ChannelMeta: &relaycommon.ChannelMeta{ChannelBaseUrl: "https://proxy.example", ApiKey: "fixture-key", ChannelType: 61}})
+	content, err := adaptor.BuildContentRequest(context.Background(), task, "video", channel.TaskArtifactClientRequest{Method: "GET"})
+	if err != nil {
+		return err
+	}
+	if content == nil || content.URL != "https://proxy.example/v1/videos/upstream-id/content" || content.Credentialless || content.Headers["Authorization"] != "Bearer fixture-key" {
+		return fmt.Errorf("host did not construct the credentialed content request")
+	}
 	return nil
 }
 

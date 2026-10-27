@@ -80,8 +80,9 @@ export const meta = {
     en: "xAI-compatible proxy for Grok Imagine video generation",
     zh: "xAI 兼容反代的 Grok Imagine 视频生成",
   },
-  version: "0.1.0",
+  version: "0.1.1",
   author: { name: "QuantumNous" },
+  auth: "api_key",
   baseUrl: "https://api.x.ai",
   // Result videos, whose headers settle the resolution of edits and extensions.
   allowedHosts: ["vidgen.x.ai"],
