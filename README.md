@@ -13,12 +13,12 @@ https://raw.githubusercontent.com/heyzeyu/new-api-xai-proxy/main/marketplace.jso
 也可以在「上传插件 → 从 URL 导入」填写固定版本：
 
 ```text
-https://raw.githubusercontent.com/heyzeyu/new-api-xai-proxy/v0.1.1/plugin.js
+https://raw.githubusercontent.com/heyzeyu/new-api-xai-proxy/v0.1.2/plugin.js
 ```
 
 索引包含固定版本的源码 SHA-256。插件也可直接上传仓库中的 `plugin.js`。宿主须支持 Task Plugin API v1、模型用量配置、原生任务路由和标准视频 / Responses 协议。
 
-安装后新建「任务插件」类型的渠道，选择 **xAI Proxy**，填入自己的反代 Base URL 和上游密钥，再选择需要开放的模型及用户分组。示例默认地址仅用于标识 xAI 接口；实际反代地址由管理员配置，不随源码发布。
+安装后新建「任务插件」类型的渠道，选择 **xAI Proxy**，填入自己的 HTTPS 反代 Base URL 和上游密钥，再选择需要开放的模型及用户分组。插件拒绝向 HTTP 地址发送上游密钥。示例默认地址仅用于标识 xAI 接口；实际反代地址由管理员配置，不随源码发布。
 
 ## 模型与接口
 

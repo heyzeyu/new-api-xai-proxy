@@ -80,7 +80,7 @@ export const meta = {
     en: "xAI-compatible proxy for Grok Imagine video generation",
     zh: "xAI 兼容反代的 Grok Imagine 视频生成",
   },
-  version: "0.1.1",
+  version: "0.1.2",
   author: { name: "QuantumNous" },
   auth: "api_key",
   baseUrl: "https://api.x.ai",
@@ -142,8 +142,14 @@ function plainObject(value) {
 
 // Another New API gateway serves the xAI wire format only on this plugin's
 // prefixed native routes.
+function validHTTPSBaseURL(baseUrl) {
+  return /^https:\/\/[^/?#@\\\s]+(?:\/[^?#\\\s]*)?$/i.test(baseUrl);
+}
+
 function apiRoot(ctx) {
-  return ctx.baseUrl + (ctx.upstream && ctx.upstream.kind === "new_api" ? "/xai-proxy" : "");
+  const baseUrl = trimmed(ctx.baseUrl).replace(/\/+$/, "");
+  if (!validHTTPSBaseURL(baseUrl)) throw new Error("xAI Proxy requires an HTTPS base URL without credentials, query, or fragment");
+  return baseUrl + (ctx.upstream && ctx.upstream.kind === "new_api" ? "/xai-proxy" : "");
 }
 
 function videoModel(identity) {
@@ -684,8 +690,7 @@ function videoContentRequest(ctx, url, upstreamTaskId) {
   const taskId = trimmed(upstreamTaskId);
   const path = "/v1/videos/" + encodeURIComponent(taskId) + "/content";
   const baseUrl = trimmed(ctx.baseUrl).replace(/\/+$/, "");
-  const authority = baseUrl.slice(8).split("/")[0];
-  if (!taskId || url !== path || !baseUrl.startsWith("https://") || !authority || authority.includes("@") || /[\\?#\s]/.test(baseUrl)) {
+  if (!taskId || url !== path || !validHTTPSBaseURL(baseUrl)) {
     throw new Error("invalid video content URL");
   }
   return { url: baseUrl + path, headers: { Authorization: "Bearer " + ctx.apiKey } };

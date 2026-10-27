@@ -410,6 +410,44 @@
         }
       ],
       "expectedError": "invalid video content URL"
+    },
+    {
+      "name": "reject insecure base in buildSubmitRequest",
+      "hook": "buildSubmitRequest",
+      "args": [
+        {
+          "model": "grok-imagine-video",
+          "upstreamModel": "grok-imagine-video",
+          "baseUrl": "http://proxy.example",
+          "apiKey": "fixture-key",
+          "taskId": "upstream-id",
+          "requestBody": {
+            "prompt": "a ball",
+            "duration": 1,
+            "resolution": "480p"
+          }
+        }
+      ],
+      "expectedError": "requires an HTTPS base URL"
+    },
+    {
+      "name": "reject insecure base in buildQueryRequest",
+      "hook": "buildQueryRequest",
+      "args": [
+        {
+          "model": "grok-imagine-video",
+          "upstreamModel": "grok-imagine-video",
+          "baseUrl": "http://proxy.example",
+          "apiKey": "fixture-key",
+          "taskId": "upstream-id",
+          "requestBody": {
+            "prompt": "a ball",
+            "duration": 1,
+            "resolution": "480p"
+          }
+        }
+      ],
+      "expectedError": "requires an HTTPS base URL"
     }
   ]
 }

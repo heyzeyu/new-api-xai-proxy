@@ -56,6 +56,14 @@ test('gateway upstream uses the new plugin native route', () => {
   assert.equal(plugin.buildQueryRequest({...ctx, taskId: 'task_123'}).url, 'https://gateway.example/xai-proxy/v1/videos/task_123');
 });
 
+test('submission and polling never send channel credentials to an insecure base', () => {
+  for (const baseUrl of ['http://proxy.example', 'https://name@proxy.example', 'https://proxy.example?next=evil.example', 'https://proxy.example/#fragment', 'https://proxy.example\\@evil.example']) {
+    const ctx = {model: 'grok-imagine-video', upstreamModel: 'grok-imagine-video', baseUrl, apiKey: 'fixture-key', taskId: 'upstream-id', requestBody: {prompt: 'a ball', duration: 1, resolution: '480p'}};
+    assert.throws(() => plugin.buildSubmitRequest(ctx), /requires an HTTPS base URL/);
+    assert.throws(() => plugin.buildQueryRequest(ctx), /requires an HTTPS base URL/);
+  }
+});
+
 function box(kind, ...contents) {
   const body = Buffer.concat(contents);
   const header = Buffer.alloc(8);
