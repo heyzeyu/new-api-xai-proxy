@@ -80,7 +80,8 @@ export const meta = {
     en: "xAI-compatible proxy for Grok Imagine video generation",
     zh: "xAI 兼容反代的 Grok Imagine 视频生成",
   },
-  version: "0.1.2",
+  version: "0.1.3",
+  requiredCapabilities: ["remote-image-input@1"],
   author: { name: "QuantumNous" },
   auth: "api_key",
   baseUrl: "https://api.x.ai",
@@ -454,8 +455,25 @@ export const native = {
   },
 };
 
+function hostPreparedImage(media) {
+  if (!media || typeof media.url !== "string") return media;
+  if (/^data:image\/[^;]+;base64,/.test(media.url)) return media;
+  if (!/^https?:\/\//.test(media.url)) throw new Error("Input image must be a public HTTP(S) URL or an image data URI");
+  return { url: { __imageURL: media.url } };
+}
+
 export function buildSubmitRequest(ctx) {
   const request = videoRequest(ctx.action, ctx.requestBody || {}, ctx);
+  const mode = (ctx.inputImages || {}).mode || "url";
+  if (mode !== "url" && mode !== "base64") throw new Error("Invalid input image preparation mode");
+  if (mode === "base64") {
+    if (request.body.image) request.body.image = hostPreparedImage(request.body.image);
+    if (request.body.reference_images) request.body.reference_images = request.body.reference_images.map(hostPreparedImage);
+    if (request.body.last_frame) request.body.last_frame = hostPreparedImage(request.body.last_frame);
+    if (request.body.keyframes) request.body.keyframes = request.body.keyframes.map(function (frame) {
+      return { image: hostPreparedImage(frame.image), timestamp_s: frame.timestamp_s };
+    });
+  }
   const paths = { video_edit: "/v1/videos/edits", video_extension: "/v1/videos/extensions" };
   return {
     url: apiRoot(ctx) + (paths[request.action] || "/v1/videos/generations"),

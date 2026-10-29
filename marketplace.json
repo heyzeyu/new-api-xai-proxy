@@ -27,12 +27,12 @@
         },
         "openai_video"
       ],
-      "latest": "0.1.2",
+      "latest": "0.1.3",
       "versions": [
         {
-          "version": "0.1.2",
-          "path": "https://raw.githubusercontent.com/heyzeyu/new-api-xai-proxy/v0.1.2/plugin.js",
-          "sha256": "7889ac8a45606057d8674016676cbbf0e68a252370fdb02130855d4e27664999",
+          "version": "0.1.3",
+          "path": "https://raw.githubusercontent.com/heyzeyu/new-api-xai-proxy/v0.1.3/plugin.js",
+          "sha256": "dcd19428c0d2aa58daf1bfc5ad85835fb49f218a0808904ee9d9d4154df5183b",
           "minApiVersion": 1,
           "kind": "task",
           "baseUrl": "https://api.x.ai",

@@ -109,3 +109,25 @@ test('invalid relative media never receives the credential during a billing prob
     assert.equal(requests, 0);
   } finally { globalThis.utils = previous; }
 });
+
+
+test('channel mode marks every video input image for host preparation without changing usage', () => {
+  const ctx = {model: 'grok-imagine-video-1.5', upstreamModel: 'grok-imagine-video-1.5', baseUrl: 'https://proxy.example', apiKey: 'fixture-key', requestBody: {
+    prompt: 'Animate', image: 'https://images.example/first.png', last_frame: 'https://images.example/last.png',
+    reference_images: ['https://images.example/reference.png', 'data:image/png;base64,aW1n'],
+    keyframes: [{image: 'https://images.example/key.png', timestamp_s: 2}], duration: 5, resolution: '720p'
+  }};
+  const original = structuredClone(ctx);
+  const urlRequest = plugin.buildSubmitRequest({...ctx, inputImages: {mode: 'url'}});
+  const encodedRequest = plugin.buildSubmitRequest({...ctx, inputImages: {mode: 'base64'}});
+  assert.equal(urlRequest.body.image.url, 'https://images.example/first.png');
+  assert.deepEqual(encodedRequest.body.image.url, {__imageURL: 'https://images.example/first.png'});
+  assert.deepEqual(encodedRequest.body.last_frame.url, {__imageURL: 'https://images.example/last.png'});
+  assert.deepEqual(encodedRequest.body.reference_images[0].url, {__imageURL: 'https://images.example/reference.png'});
+  assert.equal(encodedRequest.body.reference_images[1].url, 'data:image/png;base64,aW1n');
+  assert.deepEqual(encodedRequest.body.keyframes[0].image.url, {__imageURL: 'https://images.example/key.png'});
+  assert.equal(encodedRequest.body.keyframes[0].timestamp_s, 2);
+  assert.deepEqual(plugin.extractUsage({...ctx, inputImages: {mode: 'base64'}}), plugin.extractUsage({...ctx, inputImages: {mode: 'url'}}));
+  assert.deepEqual(ctx, original);
+  assert.deepEqual(plugin.meta.requiredCapabilities, ['remote-image-input@1']);
+});
